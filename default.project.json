@@ -1,0 +1,58 @@
+{
+    "name": "StandingStones",
+    "tree": {
+     "$className": "DataModel",
+     "ReplicatedStorage": {
+        "$className": "ReplicatedStorage",
+        "Source": {
+          "$path": "src/ReplicatedStorage"
+        },
+        "Packages": {
+          "$path": "Packages"
+        }
+     },
+     "ServerScriptService": {
+        "$className": "ServerScriptService",
+        "Source": {
+          "$path": "src/ServerScriptService"
+        },
+        "Packages": {
+          "$path": "Packages"
+        }
+      },
+      "ServerStorage": {
+        "$className": "ServerStorage",
+        "Source": {
+          "$path": "src/ServerStorage"
+        },
+        "Packages": {
+          "$path": "Packages"
+        }
+      },
+      "StarterPlayer": {
+        "$className": "StarterPlayer",
+        "StarterPlayerScripts": {
+          "$className": "StarterPlayerScripts",
+          "Source": {
+            "$path": "src/StarterPlayerScripts"
+          },
+          "Packages": {
+            "$path": "Packages"
+          }
+        },
+        "Source": {
+          "$path": "src/StarterPlayer"
+        }
+      },
+      "Workspace": {
+        "$properties": {
+          "FilteringEnabled": true
+        }
+      },
+      "SoundService": {
+        "$properties": {
+          "RespectFilteringEnabled": true
+        }
+      }
+    }
+  }

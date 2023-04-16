@@ -9,7 +9,7 @@ local GameService = Knit.CreateService( {
     },
     runningGame=false
 })
-
+GameService.CurrentGame = {round=1,roundWinners={}}
 GameService.BoardData = {
     stones = {
         {  stoneName = "field1",
@@ -19,21 +19,20 @@ GameService.BoardData = {
             timer=8
         }
     },
-    currRound=1,
+    
     colors={"White", "Bright red","Bright blue","Bright yellow","Bright green","Bright violet","Bright orange","Black"}
 }
-function GameService.DrawBoard(redraw) 
-   local boardData = GameService.BoardData
- --   FieldController.FieldService:GetFieldData():andThen(function(fieldData) 
-     -- iterate through fields and create each field at position and size 
-     local stone =  repStore.Stone -- A Part which should have all the base properties
-     local rando = Random.new()
-     local inCt = 1
-     for i, brd in  boardData.stones do -- this loop is for the keystones in the stones table
+function GameService.DrawBoard()
+    local boardData = GameService.BoardData
+    local stone =  repStore.Stone -- A Part which should have all the base properties
+    local rando = Random.new()
+    local inCt = 1
+    for i, brd in  boardData.stones do -- this loop is for the keystones in the stones table
         local xit = 6 -- brd['size'][1] --/6 
         local zit = 6 -- brd['size'][3] -- /6
         local xpos = brd['position'][1]
         local cn = 1
+
         for xi=1, xit, 1 do
             local zpos = brd['position'][3]
             
@@ -60,21 +59,26 @@ function GameService.DrawBoard(redraw)
             xpos = (xpos - brd['size'][1])
         end
     end
-    
+    -- if redraw then
+    --     GameService.FreezePlayers(true)
+    -- end
 end
-function GameService.TeleportPlayersToGame(fromLobby,winnerList)
+function GameService.TeleportPlayersToGame(player, fromLobby,winnerList)
     local players = GameService.PlayerService.PlayerList
     local randy = Random.new()
     if fromLobby then
-        for _, player in ipairs(players) do
+        for _, plyer in ipairs(players) do
             -- pick random piece position
-            GameService.teleportToPlace(player,GameService.BoardData.stones[1].instances[randy:NextInteger(1,#GameService.BoardData.stones[1].instances)].position)
+            GameService.teleportToPlace(plyer,GameService.BoardData.stones[1].instances[randy:NextInteger(1,#GameService.BoardData.stones[1].instances)].position)
         end
     else
-        -- just do the winners of the last round 
-        for _, player in ipairs(winnerList) do
-            GameService.teleportToPlace(player,GameService.BoardData.stones[1].instances[randy:NextInteger(1,#GameService.BoardData.stones[1].instances)].position)
-        end
+        -- just do the winner of the last round back to the winners spawn plate
+        local  spwnPos = { -51.756, 68.399, -46.615}
+       -- for _, plyr in ipairs(winnerList) do
+           -- if winnerList[1] == player.Name then
+                GameService.teleportToPlace(winnerList[1],spwnPos)
+          --  end
+        -- end
     end
 end
 function GameService.teleportToPlace(player, dest)
@@ -94,61 +98,69 @@ function GameService.Client:PlayerAdded(player)
     end
    
 end
-function GameService.StartGame(player) 
- -- draw board 
+
+function GameService.StartGame(player)
+    -- draw board 
+    print("draw board first time")
     GameService.DrawBoard()
--- teleport players to board 
-    task.wait(2)
-    GameService.TeleportPlayersToGame(true) -- send them all from the lobby since this is the first round
+    task.wait(1)
+    local update = {event="startTimer", allPlayers=true, timer=5}
+    GameService.showStartCountdown(player, update)
     GameService.runningGame = true
--- begin game play 
+    -- begin game loop 
     while GameService.runningGame do
-        local roundWinners = GameService.startRound(player) 
-        if #roundWinners == 1 or not testing then
+       GameService.startRound(player) 
+        if #GameService.CurrentGame.roundWinners <= 1 then
             GameService.endRound(player)
-            GameService.endGame(player, roundWinners[1])
+            task.wait(2)
+            if #GameService.CurrentGame.roundWinners == 1 then
+                GameService.TeleportPlayersToGame(player,false,GameService.CurrentGame.roundWinners)
+            end
+            GameService.ClearBoard()
+            GameService.endGame(player)
         else 
             GameService.endRound(player)
-            GameService.DrawBoard(true)
-            task.wait(1)
-            --GameService.TeleportPlayersToGame(false,roundWinners)
+            task.wait(2)
+            GameService.FreezePlayers(true)
+          --  print("clearing board")
+            GameService.ClearBoard()
+            GameService.DrawBoard()
+            GameService.FreezePlayers(false)
+            GameService.CurrentGame.roundWinners = {}
         end
     end
-end
-function GameService.endRound(player)
-    -- GameService.clearBoard()
-    GameService:UpdateGameEventSignal(player,{event="endRound", allPlayers=true})
-end
-function GameService.endGame(player, winner)
-    -- we have a winner so put up their name in the status gui
-    -- now 
-    GameService.runningGame = false
-    GameService:UpdateGameEventSignal(player,{event="endGame",allPlayers=true, message=winner.Name.." has won."})
-    task.wait(5)
+    -- do post game activities here 
+    -- announce winner 
     print("ReStarting a new game now")
+    -- task.wait(2)
     GameService.StartGame(player)
 end
+function GameService.endRound(player)
+    GameService:UpdateGameEventSignal(player,{event="endRound", allPlayers=true})
+end
+
+function GameService.endGame(player)
+    -- we have a winner so put up their name in the status gui
+    GameService.runningGame = false
+    -- check if there is a winner other wise send out No winner message
+    local endMess = ""
+    if #GameService.CurrentGame.roundWinners == 1 then
+        endMess = GameService.CurrentGame.roundWinners[1].Name.." is the WINNER!"
+    else
+        endMess = "There are no winners."
+    end
+    GameService:UpdateGameEventSignal(player,{event="endGame",allPlayers=true, message=endMess})
+    task.wait(2) 
+    GameService.CurrentGame.roundWinners = {}
+end
+
 function GameService.startRound(player)
     local rando = Random.new()
     local win = rando:NextInteger(1,#GameService.BoardData.colors)
     local winningColor = GameService.BoardData.colors[win]
     -- show timer GUI and start timer
-    local update = {event="startRound", allPlayers=true, winner=winningColor, timer=5}
+    local update = {event="showWinnerStartCountdown", allPlayers=true, winner=winningColor, timer=5}
     -- fire game event signal to start the round, the client should show a 5 sec timer display.
-    GameService:UpdateGameEventSignal(player, update) 
-    -- we will loop here and send the countdown to the ui to keep all players in sync
-    local i = 0
-    local ctr = update.timer
-    while i < ctr do
-     --print(5-i)
-     update.event = "startTimer"
-     GameService:UpdateGameEventSignal(player, update) 
-     task.wait(1)
-     i = i + 1
-     update.timer = (ctr - i)
-    end
-    task.wait(1)
-    update.event = "showWinnerStartCountdown"
     GameService:UpdateGameEventSignal(player, update)
     -- do round countdown here like the start countdown
     local ix = 0
@@ -170,25 +182,48 @@ function GameService.startRound(player)
             piece.Anchored = false
         end
     end
-    return GameService.getRoundWinners()
+    GameService.getRoundWinners()
+end
+function GameService.showStartCountdown(player,update)
+    -- we will loop here and send the countdown to the ui to keep all players in sync
+    local i = 0
+    local ctr = update.timer
+    while i < ctr do
+      --  print(5-i)
+        update.event = "startTimer"
+        GameService:UpdateGameEventSignal(player, update) 
+        if i == 3 then
+            GameService.TeleportPlayersToGame(player, true)
+        end
+        task.wait(1)
+        i = i + 1
+        update.timer = (ctr - i)
+    end
 end
 function GameService.getRoundWinners()
-    local winnersList = {}
+    -- local winnersList = {}
     local allPlayers = GameService.PlayerService.PlayerList
     for _, player in ipairs(allPlayers) do
         
         -- this is the height of the board so if you are above it or below it then you didn't make it
-        if player.Character.PrimaryPart.CFrame.p.Y < 30 and player.Character.PrimaryPart.CFrame.p.Y > 25 then
-            winnersList[#winnersList+1] = player
+        task.wait(2)
+        print("Y",player.Character.PrimaryPart.CFrame.p.Y)
+        if player.Character.PrimaryPart.CFrame.p.Y < 30 and player.Character.PrimaryPart.CFrame.p.Y > 26 then
+            GameService.CurrentGame.roundWinners[#GameService.CurrentGame.roundWinners+1] = player
         end
     end
     -- print(winnersList)
-    return winnersList
+   -- return winnersList
 end
-
-function GameService.clearBoard()
+function GameService.FreezePlayers(freeze)
+    for _,player in pairs(GameService.CurrentGame.roundWinners) do
+        player.Character.PrimaryPart.Anchored = freeze
+    end
+end
+function GameService.ClearBoard()
     local gamePieces = workspace.GamePieces:GetChildren()
     for _, piece in ipairs(gamePieces) do
+        piece.Anchored = false
        piece:Destroy()
     end
 end

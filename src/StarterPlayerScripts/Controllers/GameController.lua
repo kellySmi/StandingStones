@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
--- local RunService = game:GetService("RunService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 -- local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local GameController = Knit.CreateController { Name="GameController"}
@@ -8,17 +7,20 @@ function GameController.UpdatePlayer(player)
 --     GameController.GameMenu.Enabled = true
 
 end
-function GameController.startRound(update)
-    local player = game:GetService("Players").LocalPlayer
-   -- show screen gui and refresh numberlabel every second in loop
-   local message = "Game Starts In"
-   local messageGui = player:WaitForChild("PlayerGui"):WaitForChild("GameMessage")
-   messageGui.MessageFrame.TitleLabel.Text= message
-   messageGui.Enabled = true
-end
+-- function GameController.startRound(update)
+--     local player = game:GetService("Players").LocalPlayer
+--    -- show screen gui and refresh numberlabel every second in loop
+--    local message = "Game Starts In"
+--    local messageGui = player:WaitForChild("PlayerGui"):WaitForChild("GameMessage")
+--    messageGui.MessageFrame.TitleLabel.Text= message
+   
+-- end
 function GameController.startTimer(update)
     local player = game:GetService("Players").LocalPlayer
+    local message = "Game Starts In"
     local messageGui = player:WaitForChild("PlayerGui"):WaitForChild("GameMessage")
+    messageGui.MessageFrame.TitleLabel.Text= message
+    messageGui.Enabled = true
     messageGui.MessageFrame.NumberLabel.Text = update.timer
 end
 function GameController.showWinnerStartCountdown(update)
@@ -49,6 +51,7 @@ function GameController.endGame(update)
     local player = game:GetService("Players").LocalPlayer
     local messageGui = player:WaitForChild("PlayerGui"):WaitForChild("GameMessage")
     messageGui.MessageFrame.TitleLabel.Text = update.message
+    messageGui.MessageFrame.NumberLabel.Text = " "
     messageGui.Enabled = true
     task.wait(3)
     messageGui.Enabled = false

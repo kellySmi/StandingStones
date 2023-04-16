@@ -15,6 +15,12 @@ function PlayerService.Client.PlayerLeft(player)
             return p
         end
     end)
+    if #PlayerService.PlayerList == 0 then
+        PlayerService.GameService.endGame(player)
+    end
 end
---local playerData = { coins=0, doors={}, backsack={}, lastConnectDate="", lastSpawnPt="Start"}
+
+function PlayerService.KnitStart()
+    PlayerService.GameService = Knit.GetService("GameService")
+end
 return PlayerService

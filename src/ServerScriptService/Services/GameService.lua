@@ -129,11 +129,10 @@ function GameService.StartGame(player)
             GameService.CurrentGame.roundWinners = {}
         end
     end
-    -- do post game activities here 
-    -- announce winner 
     print("ReStarting a new game now")
     -- task.wait(2)
     GameService.StartGame(player)
+ 
 end
 function GameService.endRound(player)
     GameService:UpdateGameEventSignal(player,{event="endRound", allPlayers=true})
@@ -207,8 +206,8 @@ function GameService.getRoundWinners()
         
         -- this is the height of the board so if you are above it or below it then you didn't make it
         task.wait(2)
-        print("Y",player.Character.PrimaryPart.CFrame.p.Y)
-        if player.Character.PrimaryPart.CFrame.p.Y < 30 and player.Character.PrimaryPart.CFrame.p.Y > 26 then
+       --  print("Y",player.Character.PrimaryPart.CFrame.p.Y)
+        if player.Character.PrimaryPart and (player.Character.PrimaryPart.CFrame.p.Y < 30 and player.Character.PrimaryPart.CFrame.p.Y > 26) then
             GameService.CurrentGame.roundWinners[#GameService.CurrentGame.roundWinners+1] = player
         end
     end

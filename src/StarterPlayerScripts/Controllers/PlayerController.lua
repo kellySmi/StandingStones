@@ -5,7 +5,7 @@ local PlayerController = Knit.CreateController { Name="PlayerController", player
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 player.CharacterAdded:Connect(function()
-    print("player connecting")
+   -- print("player connecting")
     PlayerController.PlayerService:PlayerAdded(player)
     PlayerController.GameService:PlayerAdded(player)
 end)

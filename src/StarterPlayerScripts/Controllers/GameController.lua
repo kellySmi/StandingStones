@@ -30,7 +30,8 @@ function GameController.showWinnerStartCountdown(update)
     local statusGui = player:WaitForChild("PlayerGui"):WaitForChild("GameStatus")
     statusGui.StatusFrame.Title2Label.Text = update.winner
     local wColor = BrickColor.new(update.winner)
-    statusGui.StatusFrame.Title2Label.BackgroundColor3 = Color3.fromRGB(wColor.r,wColor.g,wColor.b)
+    statusGui.StatusFrame.Title2Label.BackgroundColor3 = wColor.Color -- Color3.fromRGB(wColor.r,wColor.g,wColor.b)
+    statusGui.StatusFrame.Title2Label.BackgroundTransparency = 0
     statusGui.Enabled = true
    
 end

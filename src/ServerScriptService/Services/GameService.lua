@@ -101,7 +101,6 @@ end
 
 function GameService.StartGame(player)
     -- draw board 
-    print("draw board first time")
     GameService.DrawBoard()
     task.wait(1)
     local update = {event="startTimer", allPlayers=true, timer=5}
@@ -129,7 +128,7 @@ function GameService.StartGame(player)
             GameService.CurrentGame.roundWinners = {}
         end
     end
-    print("ReStarting a new game now")
+    -- print("ReStarting a new game now")
     -- task.wait(2)
     GameService.StartGame(player)
  
